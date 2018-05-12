@@ -5,9 +5,21 @@ const sqlite = require('sqlite');
 function findDB() {
   // looking for /private/var/folders/.../com.apple.notificationcenter/db
 
-  function crawl(localPath, pathsToCheck) {
-    if (localPath.indexOf('com.apple.notificationcenter') !== -1) {
-      console.log(`Found DB @ ${localPath}/db/db`);
+  function crawl(localPath, checkPath, pathsToCheck) {
+    if (localPath.indexOf(checkPath) !== -1) {
+      if (checkPath === 'com.apple.notificationcenter') {
+        try {
+          let files = fs.readdirSync(localPath);
+          let paths = files.map(f => path.join(localPath, f)).filter(f => {
+            const stat = fs.statSync(f);
+            return stat.isDirectory();
+          });
+          return crawl(paths.shift(), 'db', paths);
+        } catch (error) {
+          console.log(`Couldn't find a DB @ ${localPath}/`);
+        }
+      }
+      console.log(`Found DB @ ${localPath}/db`);
       return path.join(localPath, 'db');
     }
     try {
@@ -17,13 +29,13 @@ function findDB() {
         return stat.isDirectory();
       });
       let paths = pathsToCheck.concat(files);
-      return crawl(paths.shift(), paths);
+      return crawl(paths.shift(), checkPath, paths);
     } catch (error) {
-      return crawl(pathsToCheck.shift(), pathsToCheck);
+      return crawl(pathsToCheck.shift(), checkPath, pathsToCheck);
     }
   }
 
-  return crawl('/private/var/folders', []);
+  return crawl('/private/var/folders', 'com.apple.notificationcenter', []);
 }
 
 async function cleanDb(dbPath) {
