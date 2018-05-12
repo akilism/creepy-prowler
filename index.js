@@ -34,7 +34,7 @@ async function cleanDb(dbPath) {
     'org.whispersystems.signal-desktop'
   );
 
-  if (!signalID.app_id) {
+  if (!signalID || !signalID.app_id) {
     console.log('Could Not Find a Signal-Desktop app_id!');
     process.exit(0);
   }
