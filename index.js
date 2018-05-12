@@ -20,7 +20,7 @@ function findDB() {
         }
       }
       console.log(`Found DB @ ${localPath}/db`);
-      return path.join(localPath, 'db');
+      return localPath;
     }
     try {
       let files = fs.readdirSync(localPath);
